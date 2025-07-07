@@ -71,15 +71,28 @@ export async function ensureWinShims(): Promise<void> {
  */
 async function persistPathForUser(binDir: string): Promise<void> {
   try {
-    const psScript = `
+    const psScript = ` 
       $bin = "${binDir.replace(/\\/g, '\\\\')}"
-      if (-not ($Env:Path -split ';' | Where-Object { $_ -ieq $bin })) {
+      $userPath = [System.Environment]::GetEnvironmentVariable("Path", "User")
+      $bin = "c:\test4\moretext2cdeff\moremoremore\andmore1234\more"
+      $l = ($bin.Length + $userPath.Length)
+      echo $l
+      if (-not ($userPath -split ';' | Where-Object { $_ -ieq $bin })) {
         # Add to beginning of PATH for priority
-        setx PATH "$bin;$Env:Path" >$null
+        if (($bin.Length + $userPath.Length) -lt 1024.)
+        {
+        echo $l
+        setx PATH "$bin;$userPath" >$null
         Write-Host "Added Goose bin directory to beginning of user PATH"
-      } else {
+      }
+      else
+      {
+      echo "too long"
+      }
+      }
+      else {
         # If already in PATH, ensure it's at the beginning
-        $pathParts = $Env:Path -split ';'
+        $pathParts = $UserPath -split ';'
         $binIndex = 0
         for ($i = 0; $i -lt $pathParts.Count; $i++) {
           if ($pathParts[$i] -ieq $bin) {
@@ -94,6 +107,7 @@ async function persistPathForUser(binDir: string): Promise<void> {
           $newPath = $pathParts -join ';'
           setx PATH $newPath >$null
           Write-Host "Moved Goose bin directory to beginning of user PATH"
+          $binIndex = 0;
         } else {
           Write-Host "Goose bin directory already at beginning of user PATH"
         }
